@@ -31,13 +31,27 @@ class Websitestats(AgentCheck):
         dns_time = c.getinfo(pycurl.NAMELOOKUP_TIME) #DNS time
         conn_time = c.getinfo(pycurl.CONNECT_TIME)   #TCP/IP 3-way handshaking time
         starttransfer_time = c.getinfo(pycurl.STARTTRANSFER_TIME)  #time-to-first-byte time
-        total_time = c.getinfo(pycurl.TOTAL_TIME)  #last requst time
+        pretransfer_time = c.getinfo(pycurl.PRETRANSFER_TIME)
+        redirect_time = c.getinfo(pycurl.REDIRECT_TIME)
+        redirect_count = c.getinfo(pycurl.REDIRECT_COUNT)
+        size_download = c.getinfo(pycurl.SIZE_DOWNLOAD)
+        speed_download = c.getinfo(pycurl.SPEED_DOWNLOAD)
+        content_length_download = c.getinfo(pycurl.CONTENT_LENGTH_DOWNLOAD)
+        num_connects = c.getinfo(pycurl.NUM_CONNECTS)
+        total_time = c.getinfo(pycurl.TOTAL_TIME)
         c.close()
 
         # format data
         data = { "dns_time": dns_time, 
                  "conn_time": conn_time,
                  "starttransfer_time": starttransfer_time,
+                 "pretransfer_time": pretransfer_time,
+                 "redirect_time": redirect_time,
+                 "redirect_count": redirect_count,
+                 "size_download": size_download,
+                 "speed_download": speed_download,
+                 "content_length_download": content_length_download,
+                 "num_connects": num_connects,
                  "total_time": total_time
                }
         self.log.debug(data)
