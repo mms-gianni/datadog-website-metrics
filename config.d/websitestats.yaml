@@ -1,0 +1,5 @@
+init_config:
+
+instances:
+- site: "YOURSITE someURL"
+  url: "http://www.yoursite.ch/someURL"
