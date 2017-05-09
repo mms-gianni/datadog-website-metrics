@@ -21,8 +21,11 @@ class Websitestats(AgentCheck):
         url = instance.get('url')
 
         # gather data
+        devnull = open('/dev/null', 'w')
         c = pycurl.Curl()
-        c.setopt(pycurl.URL, url)                     #set url
+        c.setopt(pycurl.URL, url)                    #set url
+        c.setopt(pycurl.WRITEFUNCTION, devnull.write)
+        c.setopt(pycurl.VERBOSE, 0)                  # no output
         c.setopt(pycurl.FOLLOWLOCATION, 1)  
         content = c.perform()                        #execute 
         dns_time = c.getinfo(pycurl.NAMELOOKUP_TIME) #DNS time
@@ -37,13 +40,13 @@ class Websitestats(AgentCheck):
                  "starttransfer_time": starttransfer_time,
                  "total_time": total_time
                }
-
         self.log.debug(data)
 
+        # send the data
         try:
-            for field, value in data:
+            for field, value in data.iteritems():
                 # self.log.debug(data)
-                # tags = ['site:%s' % site] + basetags
+                tags = ['site:%s' % site]
                 self.gauge('website.stats.'+field, value, tags=tags)
         except ValueError:
             self.log.error("Failed to save data")
