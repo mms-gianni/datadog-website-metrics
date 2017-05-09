@@ -11,3 +11,40 @@ class Websitestats(AgentCheck):
         AgentCheck.__init__(self, name, init_config, agentConfig, instances=instances)
 
     def check(self, instance):
+
+        # Make sure plugin is configured
+        if instance.get("site", None) is None:
+            raise Exception("Check is not configured: add site")
+        site = instance.get('site')
+        if instance.get("url", None) is None:
+            raise Exception("Check is not configured: add url")
+        url = instance.get('url')
+
+        # gather data
+        c = pycurl.Curl()
+        c.setopt(pycurl.URL, url)                     #set url
+        c.setopt(pycurl.FOLLOWLOCATION, 1)  
+        content = c.perform()                        #execute 
+        dns_time = c.getinfo(pycurl.NAMELOOKUP_TIME) #DNS time
+        conn_time = c.getinfo(pycurl.CONNECT_TIME)   #TCP/IP 3-way handshaking time
+        starttransfer_time = c.getinfo(pycurl.STARTTRANSFER_TIME)  #time-to-first-byte time
+        total_time = c.getinfo(pycurl.TOTAL_TIME)  #last requst time
+        c.close()
+
+        # format data
+        data = { "dns_time": dns_time, 
+                 "conn_time": conn_time,
+                 "starttransfer_time": starttransfer_time,
+                 "total_time": total_time
+               }
+
+        self.log.debug(data)
+
+        try:
+            for field, value in data:
+                # self.log.debug(data)
+                # tags = ['site:%s' % site] + basetags
+                self.gauge('website.stats.'+field, value, tags=tags)
+        except ValueError:
+            self.log.error("Failed to save data")
+            return
